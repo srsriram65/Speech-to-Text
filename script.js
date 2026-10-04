@@ -1,48 +1,84 @@
-function sendMessage() {
+let recognition;
 
-    let input = document.getElementById("userInput");
-    let message = input.value.toLowerCase();
+if ("webkitSpeechRecognition" in window) {
 
-    if (message === "") {
+    recognition = new webkitSpeechRecognition();
+
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+
+    recognition.onstart = function () {
+        document.getElementById("status").innerText =
+            "🎙️ Listening... Speak now";
+    };
+
+    recognition.onresult = function (event) {
+
+        let text = "";
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+
+            text += event.results[i][0].transcript;
+        }
+
+        document.getElementById("result").value = text;
+    };
+
+    recognition.onerror = function () {
+
+        document.getElementById("status").innerText =
+            "⚠️ Microphone or speech recognition error";
+    };
+
+    recognition.onend = function () {
+
+        document.getElementById("status").innerText =
+            "Ready to listen";
+    };
+
+} else {
+
+    alert("Speech recognition is not supported in this browser.");
+}
+
+
+function startListening() {
+
+    if (recognition) {
+        recognition.start();
+    }
+}
+
+
+function stopListening() {
+
+    if (recognition) {
+        recognition.stop();
+    }
+}
+
+
+function clearText() {
+
+    document.getElementById("result").value = "";
+
+    document.getElementById("status").innerText =
+        "Ready to listen";
+}
+
+
+function copyText() {
+
+    let text = document.getElementById("result").value;
+
+    if (text === "") {
+        alert("There is no text to copy.");
         return;
     }
 
-    let chatBox = document.getElementById("chatBox");
+    navigator.clipboard.writeText(text);
 
-    chatBox.innerHTML +=
-        '<p class="user">You: ' + message + '</p>';
-
-    let reply = "";
-
-    if (message.includes("hello") || message.includes("hi")) {
-        reply = "Hello! How can I help you?";
-    }
-    else if (message.includes("exam")) {
-        reply = "Prepare a study schedule and revise important topics.";
-    }
-    else if (message.includes("study")) {
-        reply = "Study regularly and practice with examples.";
-    }
-    else if (message.includes("python")) {
-        reply = "Python is a beginner-friendly programming language.";
-    }
-    else if (message.includes("java")) {
-        reply = "Java is a popular object-oriented programming language.";
-    }
-    else if (message.includes("college")) {
-        reply = "Focus on your subjects, assignments and placement preparation.";
-    }
-    else if (message.includes("bye")) {
-        reply = "Goodbye! All the best for your studies!";
-    }
-    else {
-        reply = "Sorry, I don't understand. Try asking about study, exams, Python or Java.";
-    }
-
-    chatBox.innerHTML +=
-        '<p class="bot">Bot: ' + reply + '</p>';
-
-    input.value = "";
-
-    chatBox.scrollTop = chatBox.scrollHeight;
+    document.getElementById("status").innerText =
+        "✅ Text copied!";
 }
